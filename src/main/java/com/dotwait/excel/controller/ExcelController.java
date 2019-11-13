@@ -11,8 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -36,12 +37,18 @@ public class ExcelController {
     /**
      * excel文件的后缀名
      */
-    private static final String EXCEL_SUFFIX = ".xls";
+    private static final String EXCEL_SUFFIX = ".xlsx";
     /**
      * 导出的zip文件名
      */
     private static final String ZIP_FILE_NAME = "excel.zip";
 
+    /**
+     * 大数据量excel导出至zip
+     *
+     * @param response response
+     * @throws IOException IO异常
+     */
     @RequestMapping(value = "/export")
     public void export(HttpServletResponse response) throws IOException {
         ServletOutputStream outputStream = response.getOutputStream();
@@ -78,5 +85,73 @@ public class ExcelController {
             zipOutputStream.close();
             outputStream.close();
         }
+    }
+
+    /**
+     * 读取的本地文件路径
+     */
+    private static final String READ_FILE_PATH = "D:/result.txt";
+    /**
+     * 写入的本地zip文件路径
+     */
+    private static final String WRITE_ZIP_PATH = "D:/result.zip";
+    /**
+     * 写入的zip中文件的名称
+     */
+    private static final String WRITE_FILE_NAME = "hello.txt";
+
+    /**
+     * 读取本地文件，写入zip文件后保存至本地
+     *
+     * @return 是否成功
+     */
+    @RequestMapping("/file")
+    public String file() {
+        File file = new File(READ_FILE_PATH);
+        if (!file.exists()) {
+            System.out.println(READ_FILE_PATH + " is not exist");
+            return "failed";
+        }
+
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
+        ZipOutputStream zipOutputStream = null;
+        try {
+            fis = new FileInputStream(file);
+            byte[] buffer = new byte[1024];
+            fos = new FileOutputStream(new File(WRITE_ZIP_PATH));
+            zipOutputStream = new ZipOutputStream(fos);
+            zipOutputStream.putNextEntry(new ZipEntry(WRITE_FILE_NAME));
+            int c;
+            while ((c = fis.read(buffer)) != -1) {
+                zipOutputStream.write(buffer, 0, c);
+            }
+            zipOutputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (zipOutputStream != null) {
+                try {
+                    zipOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return "success";
     }
 }
