@@ -77,7 +77,7 @@ public class ExcelController {
                 ZipUtil.excelWrite(i + EXCEL_SUFFIX, workbook, zipOutputStream);
                 trace.stop("导出第" + i + "个excel成功");
             }
-            traceUtil.stop("导出十个excel");
+            traceUtil.stop("导出十个excel...");
             zipOutputStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
